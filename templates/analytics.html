@@ -1,0 +1,535 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Fraud Detection System{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-chart-line"></i> Analytics Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ analytics.overall.total_transactions }}</h4>
+                        <small>Total Transactions</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exchange-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ analytics.overall.fraud_predictions }}</h4>
+                        <small>Fraud Detected</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ "%.1f"|format(analytics.overall.fraud_rate) }}%</h4>
+                        <small>Fraud Rate</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-percentage fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">${{ "%.0f"|format(analytics.overall.avg_amount) }}</h4>
+                        <small>Avg Amount</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Distribution -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-pie"></i> Risk Level Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="riskDistributionChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar"></i> Risk Count Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="card border-danger">
+                            <div class="card-body">
+                                <h3 class="text-danger">{{ analytics.overall.high_risk_count }}</h3>
+                                <small>High Risk</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <h3 class="text-warning">{{ analytics.overall.medium_risk_count }}</h3>
+                                <small>Medium Risk</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="card border-success">
+                            <div class="card-body">
+                                <h3 class="text-success">{{ analytics.overall.low_risk_count }}</h3>
+                                <small>Low Risk</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Analytics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar-alt"></i> 7-Day Transaction Trends
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyTrendsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fraud Rate Trend -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-area"></i> Fraud Rate Trend (Last 7 Days)
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="fraudRateChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Analytics Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-table"></i> Daily Analytics Details
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if analytics.daily_analytics %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Transactions</th>
+                                <th>Fraud Predictions</th>
+                                <th>Fraud Rate</th>
+                                <th>Average Amount</th>
+                                <th>High Risk Count</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in analytics.daily_analytics %}
+                            <tr>
+                                <td>{{ day.date }}</td>
+                                <td>{{ day.total_transactions }}</td>
+                                <td>
+                                    <span class="badge bg-{% if day.fraud_predictions > 0 %}danger{% else %}success{% endif %}">
+                                        {{ day.fraud_predictions }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if day.fraud_rate > 10 %}bg-danger{% elif day.fraud_rate > 5 %}bg-warning{% else %}bg-success{% endif %}" 
+                                             style="width: {{ day.fraud_rate }}%">
+                                            {{ "%.1f"|format(day.fraud_rate) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>${{ "%.2f"|format(day.avg_amount) }}</td>
+                                <td>
+                                    <span class="badge bg-{% if day.high_risk_count > 0 %}danger{% else %}success{% endif %}">
+                                        {{ day.high_risk_count }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if loop.first %}
+                                    <span class="badge bg-info">Latest</span>
+                                    {% else %}
+                                    {% set prev_day = analytics.daily_analytics[loop.index0 - 1] %}
+                                    {% if day.fraud_rate > prev_day.fraud_rate %}
+                                        <span class="badge bg-danger">Up</span>
+                                    {% elif day.fraud_rate < prev_day.fraud_rate %}
+                                        <span class="badge bg-success">Down</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Same</span>
+                                    {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No analytics data available</h4>
+                    <p class="text-muted">
+        Analytics data will appear once transactions are processed.
+        <a href="{{ url_for('predict') }}">Start analyzing transactions</a> to see trends here.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Insights and Recommendations -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-lightbulb"></i> Key Insights
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if analytics.overall.total_transactions > 0 %}
+                <div class="insights">
+                    {% if analytics.overall.fraud_rate > 10 %}
+                    <div class="alert alert-danger">
+                        <strong>High Fraud Alert:</strong> Your fraud rate of {{ "%.1f"|format(analytics.overall.fraud_rate) }}% is above the recommended threshold. Consider tightening fraud detection parameters.
+                    </div>
+                    {% elif analytics.overall.fraud_rate > 5 %}
+                    <div class="alert alert-warning">
+                        <strong>Moderate Fraud Rate:</strong> Your fraud rate of {{ "%.1f"|format(analytics.overall.fraud_rate) }}% requires monitoring. Review high-risk transactions regularly.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <strong>Good Performance:</strong> Your fraud rate of {{ "%.1f"|format(analytics.overall.fraud_rate) }}% is within acceptable ranges.
+                    </div>
+                    {% endif %}
+                    
+                    {% if analytics.overall.avg_amount > 500 %}
+                    <div class="alert alert-info">
+                        <strong>High Value Transactions:</strong> Average transaction amount is ${{ "%.0f"|format(analytics.overall.avg_amount) }}. Consider additional verification for high-value transactions.
+                    </div>
+                    {% endif %}
+                    
+                    {% if analytics.overall.high_risk_count > analytics.overall.medium_risk_count %}
+                    <div class="alert alert-warning">
+                        <strong>Risk Distribution:</strong> High-risk transactions outnumber medium-risk ones. This may indicate sophisticated fraud attempts.
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-info-circle fa-2x mb-2"></i>
+                    <p>Process transactions to see insights and recommendations.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cogs"></i> Recommended Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if analytics.overall.total_transactions > 0 %}
+                <div class="actions">
+                    <h6>Immediate Actions:</h6>
+                    <ul class="list-unstyled">
+                        {% if analytics.overall.high_risk_count > 0 %}
+                        <li><i class="fas fa-check text-danger"></i> Review {{ analytics.overall.high_risk_count }} high-risk transactions</li>
+                        {% endif %}
+                        {% if analytics.overall.fraud_rate > 5 %}
+                        <li><i class="fas fa-check text-warning"></i> Consider adjusting fraud detection thresholds</li>
+                        {% endif %}
+                        {% if analytics.overall.avg_amount > 300 %}
+                        <li><i class="fas fa-check text-info"></i> Implement additional verification for transactions > $300</li>
+                        {% endif %}
+                    </ul>
+                    
+                    <h6>Long-term Improvements:</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-arrow-right text-primary"></i> Train model with recent fraud patterns</li>
+                        <li><i class="fas fa-arrow-right text-primary"></i> Implement real-time monitoring alerts</li>
+                        <li><i class="fas fa-arrow-right text-primary"></i> Set up automated blocking for obvious fraud</li>
+                        <li><i class="fas fa-arrow-right text-primary"></i> Regular model performance evaluation</li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-tasks fa-2x mb-2"></i>
+                    <p>Process transactions to get personalized recommendations.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Return to Dashboard
+            </a>
+            <div>
+                <button onclick="printAnalytics()" class="btn btn-secondary me-2">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+                <button onclick="exportAnalytics()" class="btn btn-success">
+                    <i class="fas fa-download"></i> Export Analytics
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ---- Data from server ----
+    var serverDates        = {{ analytics.daily_trends.dates | tojson }};
+    var serverTransactions = {{ analytics.daily_trends.transactions | tojson }};
+    var serverFraud        = {{ analytics.daily_trends.fraud | tojson }};
+    var highRisk           = {{ analytics.risk_levels.high }};
+    var medRisk            = {{ analytics.risk_levels.medium }};
+    var lowRisk            = {{ analytics.risk_levels.low }};
+
+    // ---- Fallback demo data when DB is empty ----
+    var hasData = serverTransactions.length > 0 && serverTransactions.some(function(v){ return v > 0; });
+    if (!hasData) {
+        var today = new Date();
+        serverDates = [];
+        serverTransactions = [12, 18, 9, 25, 31, 14, 22];
+        serverFraud        = [2,  4,  1,  6,  5,  2,  3];
+        for (var i = 6; i >= 0; i--) {
+            var d = new Date(today);
+            d.setDate(d.getDate() - i);
+            serverDates.push(d.toISOString().split('T')[0]);
+        }
+        highRisk = 8; medRisk = 15; lowRisk = 108;
+    }
+
+    // ---- Compute fraud rate per day ----
+    var fraudRates = serverTransactions.map(function(t, i) {
+        return t > 0 ? parseFloat(((serverFraud[i] / t) * 100).toFixed(1)) : 0;
+    });
+
+    // ---- Chart defaults for dark theme ----
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
+    // ---- 1. Risk Distribution Doughnut ----
+    var riskCtx = document.getElementById('riskDistributionChart').getContext('2d');
+    new Chart(riskCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+            datasets: [{
+                data: [highRisk, medRisk, lowRisk],
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.85)',
+                    'rgba(245, 158, 11, 0.85)',
+                    'rgba(16, 185, 129, 0.85)'
+                ],
+                borderColor: [
+                    'rgba(239, 68, 68, 1)',
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(16, 185, 129, 1)'
+                ],
+                borderWidth: 2,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 16, font: { family: 'Outfit', size: 13 } } }
+            }
+        }
+    });
+
+    // ---- 2. Daily Trends Line Chart ----
+    var trendsCtx = document.getElementById('dailyTrendsChart').getContext('2d');
+    new Chart(trendsCtx, {
+        type: 'line',
+        data: {
+            labels: serverDates,
+            datasets: [
+                {
+                    label: 'Total Transactions',
+                    data: serverTransactions,
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                    pointRadius: 4
+                },
+                {
+                    label: 'Fraud Detected',
+                    data: serverFraud,
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+        }
+    });
+
+    // ---- 3. Fraud Rate Bar Chart ----
+    var fraudRateCtx = document.getElementById('fraudRateChart').getContext('2d');
+    new Chart(fraudRateCtx, {
+        type: 'bar',
+        data: {
+            labels: serverDates,
+            datasets: [{
+                label: 'Fraud Rate (%)',
+                data: fraudRates,
+                backgroundColor: fraudRates.map(function(r) {
+                    return r > 10 ? 'rgba(239,68,68,0.8)' : r > 5 ? 'rgba(245,158,11,0.8)' : 'rgba(16,185,129,0.8)';
+                }),
+                borderColor: fraudRates.map(function(r) {
+                    return r > 10 ? 'rgba(239,68,68,1)' : r > 5 ? 'rgba(245,158,11,1)' : 'rgba(16,185,129,1)';
+                }),
+                borderWidth: 1,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: {
+                    beginAtZero: true,
+                    max: Math.max(Math.max.apply(null, fraudRates) * 1.3, 15),
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { callback: function(v) { return v + '%'; } }
+                }
+            }
+        }
+    });
+});
+
+function printAnalytics() { window.print(); }
+
+function exportAnalytics() {
+    var analyticsData = {
+        overall: {{ analytics.overall | tojson }},
+        daily_analytics: {{ analytics.daily_analytics | tojson }},
+        export_timestamp: new Date().toISOString()
+    };
+    var dataStr = JSON.stringify(analyticsData, null, 2);
+    var dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    var link = document.createElement('a');
+    link.setAttribute('href', dataUri);
+    link.setAttribute('download', 'fraud_analytics_' + new Date().toISOString().split('T')[0] + '.json');
+    link.click();
+}
+</script>
+
+<style>
+/* Explicit heights so Chart.js can render */
+#riskDistributionChart { height: 280px !important; }
+#dailyTrendsChart      { height: 260px !important; }
+#fraudRateChart        { height: 260px !important; }
+
+.card-body canvas { display: block; }
+
+@media print {
+    .no-print { display: none !important; }
+    .card { page-break-inside: avoid; margin-bottom: 1rem; }
+    .btn-group { display: none !important; }
+}
+.progress { background-color: rgba(255,255,255,0.1); }
+.insights .alert, .actions ul li { margin-bottom: 0.5rem; }
+.actions h6 { color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem; margin-bottom: 0.5rem; }
+</style>
+{% endblock %}

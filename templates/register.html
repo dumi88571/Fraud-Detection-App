@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Register - FraudGuard AI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+  <div class="col-md-5">
+    <div class="card border-0 shadow-lg p-4" data-aos="zoom-in">
+      <div class="text-center mb-4">
+        <div class="bg-success text-white d-inline-block rounded-circle p-3 mb-3">
+          <i class="fas fa-user-plus fa-2x"></i>
+        </div>
+        <h3 class="fw-bold">Create Account</h3>
+        <p class="text-muted">Register for FraudGuard AI Access</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('register') }}">
+        <div class="mb-3">
+          <label class="form-label text-light fw-semibold">Email Address</label>
+          <div class="input-group">
+            <span class="input-group-text bg-dark border-secondary text-success">
+              <i class="fas fa-envelope"></i>
+            </span>
+            <input type="email" name="email" class="form-control bg-dark text-white border-secondary" required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label text-light fw-semibold">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-dark border-secondary text-success">
+              <i class="fas fa-lock"></i>
+            </span>
+            <input type="password" name="password" class="form-control bg-dark text-white border-secondary" required minlength="6">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm">
+          <i class="fas fa-user-check me-2"></i>Register Account
+        </button>
+      </form>
+
+      <div class="text-center mt-4 pt-3 border-top border-secondary">
+        <p class="text-muted small">Already have an account? <a href="{{ url_for('login') }}" class="text-success text-decoration-none">Login Here</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

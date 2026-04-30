@@ -1,0 +1,7 @@
+{
+  "model_type": "Random Forest",
+  "accuracy": 1.0,
+  "roc_auc": 1.0,
+  "training_date": "2026-04-21T13:38:15.463591",
+  "feature_count": 16
+}

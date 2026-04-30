@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Predict - Fraud Detection System{% endblock %}
+
+{% block content %}
+<div class="page-header" data-aos="fade-down">
+  <h1 class="display-5 fw-bold mb-2"><i class="fas fa-search me-3 text-white"></i>Single Transaction Prediction</h1>
+  <p class="lead">Enter transaction details to estimate fraud risk instantly</p>
+</div>
+
+<div class="row g-4">
+  <!-- Main Form -->
+  <div class="col-lg-8" data-aos="fade-right">
+    <div class="card border-0 shadow-lg">
+      <div class="card-header bg-gradient-primary text-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-edit me-2"></i>Transaction Details</h5>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" class="row g-4">
+          <!-- User & Amount -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-primary">
+              <i class="fas fa-user me-2"></i>User ID
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-0">
+                <i class="fas fa-id-badge text-primary"></i>
+              </span>
+              <input class="form-control border-0 bg-light" type="number" name="user_id" min="1" placeholder="Enter user ID" required>
+            </div>
+            <div class="form-text">Unique identifier for the user</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-success">
+              <i class="fas fa-dollar-sign me-2"></i>Amount
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-0">
+                <i class="fas fa-coins text-success"></i>
+              </span>
+              <input class="form-control border-0 bg-light" type="number" name="amount" min="0" step="0.01" placeholder="0.00" required>
+            </div>
+            <div class="form-text">Transaction amount in USD</div>
+          </div>
+
+          <!-- Transaction Type & Category -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-info">
+              <i class="fas fa-credit-card me-2"></i>Type
+            </label>
+            <select class="form-select border-0 bg-light" name="transaction_type" required>
+              <option value="online">Online</option>
+              <option value="pos">POS</option>
+              <option value="atm">ATM</option>
+              <option value="qr">QR Code</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-warning">
+              <i class="fas fa-store me-2"></i>Category
+            </label>
+            <select class="form-select border-0 bg-light" name="merchant_category" required>
+              <option value="retail">Retail</option>
+              <option value="food">Food & Dining</option>
+              <option value="travel">Travel</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="gas">Gas</option>
+              <option value="grocery">Grocery</option>
+              <option value="healthcare">Healthcare</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-secondary">
+              <i class="fas fa-globe me-2"></i>Country
+            </label>
+            <select class="form-select border-0 bg-light" name="country" required>
+              <option value="US">United States</option>
+              <option value="CA">Canada</option>
+              <option value="UK">United Kingdom</option>
+              <option value="FR">France</option>
+              <option value="DE">Germany</option>
+              <option value="TR">Turkey</option>
+              <option value="BR">Brazil</option>
+              <option value="IN">India</option>
+              <option value="CN">China</option>
+              <option value="JP">Japan</option>
+            </select>
+          </div>
+
+          <!-- Time & Risk Scores -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-info">
+              <i class="fas fa-clock me-2"></i>Hour (0-23)
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-0">
+                <i class="fas fa-clock text-info"></i>
+              </span>
+              <input class="form-control border-0 bg-light" type="number" id="hour" name="hour" min="0" max="23" required>
+            </div>
+            <div class="form-text">24-hour format</div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-danger">
+              <i class="fas fa-mobile-alt me-2"></i>Device Risk
+            </label>
+            <input class="form-control border-0 bg-light" type="number" name="device_risk_score" min="0" max="1" step="0.01" value="0.5" required>
+            <div class="form-text">0 (safe) to 1 (high risk)</div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-danger">
+              <i class="fas fa-wifi me-2"></i>IP Risk
+            </label>
+            <input class="form-control border-0 bg-light" type="number" name="ip_risk_score" min="0" max="1" step="0.01" value="0.5" required>
+            <div class="form-text">0 (safe) to 1 (high risk)</div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="col-12 d-grid mt-4">
+            <button class="btn btn-primary btn-lg no-loading" type="submit">
+              <i class="fas fa-brain me-2"></i>Analyze Transaction
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="col-lg-4" data-aos="fade-left">
+    <!-- Tips Card -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-gradient-info text-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="fas fa-lightbulb me-2"></i>Helpful Tips</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex mb-3">
+          <div class="flex-shrink-0">
+            <span class="badge bg-primary rounded-circle p-2">1</span>
+          </div>
+          <div class="ms-3">
+            <p class="mb-0 small">Higher amounts combined with high risk scores significantly increase fraud probability.</p>
+          </div>
+        </div>
+        <div class="d-flex mb-3">
+          <div class="flex-shrink-0">
+            <span class="badge bg-success rounded-circle p-2">2</span>
+          </div>
+          <div class="ms-3">
+            <p class="mb-0 small">For multiple transactions, use <a href="{{ url_for('batch_predict') }}" class="fw-bold">Batch Prediction</a> for faster processing.</p>
+          </div>
+        </div>
+        <div class="d-flex">
+          <div class="flex-shrink-0">
+            <span class="badge bg-warning rounded-circle p-2">3</span>
+          </div>
+          <div class="ms-3">
+            <p class="mb-0 small">Review all past predictions in the <a href="{{ url_for('transactions') }}" class="fw-bold">Transactions</a> section.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Card -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-gradient-secondary text-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2 no-print">
+          <a class="btn btn-outline-primary no-loading" href="{{ url_for('transactions') }}">
+            <i class="fas fa-history me-2"></i>View Transactions
+          </a>
+          <a class="btn btn-outline-warning no-loading" href="{{ url_for('flagged') }}">
+            <i class="fas fa-triangle-exclamation me-2"></i>Flagged Queue
+          </a>
+          <a class="btn btn-outline-info no-loading" href="{{ url_for('analytics') }}">
+            <i class="fas fa-chart-line me-2"></i>Analytics
+          </a>
+          <button class="btn btn-outline-secondary no-loading" type="button" onclick="window.print()">
+            <i class="fas fa-print me-2"></i>Print Form
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Set default hour on load so backend always receives a valid integer
+  document.addEventListener('DOMContentLoaded', function() {
+    const hourInput = document.getElementById('hour');
+    if (hourInput && !hourInput.value) {
+      hourInput.value = String(new Date().getHours());
+    }
+  });
+</script>
+{% endblock %}

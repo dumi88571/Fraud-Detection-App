@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}AI Fraud Detection{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface: rgba(20, 27, 45, 0.7);
+            --surface-glass: rgba(30, 41, 59, 0.4);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient-primary: linear-gradient(135deg, #6366f1, #a855f7);
+            --gradient-danger: linear-gradient(135deg, #ef4444, #ec4899);
+            --gradient-success: linear-gradient(135deg, #10b981, #3b82f6);
+            --gradient-warning: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.15), transparent 25%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Desktop Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-brand {
+            padding: 2rem 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .sidebar-brand i {
+            -webkit-text-fill-color: var(--accent-primary);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item-link:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .nav-item-link.active {
+            color: #fff;
+            background: var(--gradient-primary);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-item-link i {
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-item-link:hover i {
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3rem;
+            max-width: 1600px;
+        }
+
+        /* Mobile Header & Bottom Nav */
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 70px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1.5rem;
+        }
+
+        .mobile-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-glass);
+            z-index: 1000;
+            padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom));
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+
+        .mobile-nav-item i {
+            font-size: 1.25rem;
+            margin-bottom: 2px;
+        }
+
+        .mobile-nav-item.active {
+            color: var(--accent-primary);
+        }
+
+        .mobile-nav-item.active i {
+            transform: translateY(-2px);
+        }
+
+        /* Mobile specific floating action button */
+        .fab-mobile {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: var(--gradient-primary);
+            color: white;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            z-index: 999;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .fab-mobile:active {
+            transform: scale(0.9);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 992px) {
+            .sidebar {
+                display: none;
+            }
+            .mobile-header {
+                display: flex;
+            }
+            .mobile-nav {
+                display: flex;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 90px 1rem 100px 1rem; /* Space for header and bottom nav */
+            }
+            .fab-mobile {
+                display: flex;
+            }
+            .page-header h1 {
+                font-size: 1.75rem !important;
+            }
+        }
+
+        /* UI Components Overrides */
+        .card {
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            color: var(--text-primary);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background: rgba(0,0,0,0.2) !important;
+            border-bottom: 1px solid var(--border-glass);
+            border-radius: 24px 24px 0 0 !important;
+            color: #fff;
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .form-control, .form-select, .input-group-text {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid var(--border-glass) !important;
+            color: var(--text-primary) !important;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: var(--accent-primary) !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+        }
+        
+        /* Fix for select options text color on dark mode */
+        select option {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .table {
+            color: var(--text-primary);
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-glass);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+        }
+        
+        .table td {
+            border-bottom: 1px solid var(--border-glass);
+            vertical-align: middle;
+            padding: 1rem;
+        }
+
+        .table-striped>tbody>tr:nth-of-type(odd)>* {
+            --bs-table-bg-type: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+        }
+        
+        .table-hover>tbody>tr:hover>* {
+            --bs-table-bg-state: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        .text-primary { color: var(--accent-primary) !important; }
+        .text-success { color: var(--success) !important; }
+        .text-warning { color: var(--warning) !important; }
+        .text-danger { color: var(--danger) !important; }
+
+        /* Metrics */
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+        
+        .bg-gradient-primary { background: var(--gradient-primary) !important; }
+        .bg-gradient-secondary { background: var(--gradient-danger) !important; }
+        .bg-gradient-info { background: var(--gradient-success) !important; }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.6rem 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--gradient-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+
+        .btn-outline-primary {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+        .btn-outline-primary:hover {
+            background: var(--accent-primary);
+            color: #fff;
+        }
+
+        .btn-light {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-light:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* Glassmorphism badges */
+        .badge {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5em 0.75em;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        
+        .badge.bg-success { color: #34d399 !important; border-color: rgba(52, 211, 153, 0.3); }
+        .badge.bg-danger { color: #f87171 !important; border-color: rgba(248, 113, 113, 0.3); }
+        .badge.bg-warning { color: #fbbf24 !important; border-color: rgba(251, 191, 36, 0.3); }
+        
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-up {
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Alerts */
+        .alert {
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            color: #fff;
+            border-radius: 16px;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header .lead {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Print Media */
+        .print-only { display: none !important; }
+        @media print {
+            .print-only { display: block !important; }
+            .d-none.print-only { display: block !important; }
+            
+            body { 
+                background: #fff !important; 
+                color: #000 !important; 
+                font-family: 'Times New Roman', serif, 'Outfit', sans-serif !important;
+                background-image: none !important;
+            }
+            .sidebar, .mobile-nav, .mobile-header, .fab-mobile, .no-print, .toast-container { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; max-width: 100% !important; }
+            
+            /* Professional Document Formatting */
+            .card { 
+                border: 1px solid #aaa !important; 
+                box-shadow: none !important; 
+                color: #000 !important; 
+                break-inside: avoid; 
+                background: #fff !important; 
+                margin-bottom: 2rem !important;
+            }
+            .card-header {
+                background: #f8f9fa !important;
+                border-bottom: 2px solid #333 !important;
+                color: #000 !important;
+                padding: 1rem !important;
+            }
+            .card-body { padding: 1rem !important; }
+            
+            /* Reset colors for contrast */
+            .text-white, .metric-value, .text-primary, .text-success, .text-warning, .text-danger, .text-info { 
+                color: #000 !important; 
+                -webkit-text-fill-color: initial !important; 
+                background: none !important; 
+            }
+            
+            /* Alerts to Boxes */
+            .alert {
+                border: 2px solid #555 !important;
+                background: #fff !important;
+                color: #000 !important;
+                padding: 1rem !important;
+                break-inside: avoid;
+            }
+            .badge { 
+                border: 1px solid #000 !important; 
+                color: #000 !important; 
+                background: #fff !important;
+                padding: 4px 8px !important;
+            }
+            
+            /* Tables */
+            .table { border: 1px solid #333 !important; width: 100% !important; margin-bottom: 1.5rem !important;}
+            .table th { 
+                background: #e9ecef !important; 
+                color: #000 !important; 
+                border-bottom: 2px solid #333 !important;
+                font-weight: bold !important;
+            }
+            .table td { border-bottom: 1px solid #aaa !important; color: #000 !important; }
+            
+            /* Page Structure */
+            .page-break { break-before: page; }
+            
+            /* Report Header */
+            .page-header {
+                border-bottom: 3px double #333 !important;
+                padding-bottom: 1rem !important;
+                margin-bottom: 2rem !important;
+                text-align: center !important;
+            }
+            .page-header h1 {
+                font-family: serif !important;
+                font-size: 24pt !important;
+                color: #000 !important;
+            }
+            .page-header p {
+                font-size: 12pt !important;
+                color: #333 !important;
+            }
+            
+            /* Progress bars to text */
+            .progress { border: 1px solid #000 !important; background: #fff !important; height: 16px !important; }
+            .progress-bar { background: #555 !important; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% set _endpoint = request.endpoint %}
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="mobile-brand">
+            <i class="fas fa-shield-alt me-2" style="color: var(--accent-primary);"></i>FraudGuard AI
+        </div>
+    </header>
+
+    <div class="app-wrapper">
+        <!-- Desktop Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-shield-alt"></i>
+                <span>FraudGuard AI</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('index') }}" class="nav-item-link {% if _endpoint == 'index' %}active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('predict') }}" class="nav-item-link {% if _endpoint == 'predict' %}active{% endif %}">
+                    <i class="fas fa-search"></i>
+                    <span>Predict</span>
+                </a>
+                <a href="{{ url_for('batch_predict') }}" class="nav-item-link {% if _endpoint == 'batch_predict' %}active{% endif %}">
+                    <i class="fas fa-file-upload"></i>
+                    <span>Batch Predict</span>
+                </a>
+                <a href="{{ url_for('transactions') }}" class="nav-item-link {% if _endpoint == 'transactions' %}active{% endif %}">
+                    <i class="fas fa-list-ul"></i>
+                    <span>Transactions</span>
+                </a>
+                <a href="{{ url_for('flagged') }}" class="nav-item-link {% if _endpoint == 'flagged' %}active{% endif %}">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <span>Flagged</span>
+                </a>
+                <a href="{{ url_for('analytics') }}" class="nav-item-link {% if _endpoint == 'analytics' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="{{ url_for('model_info') }}" class="nav-item-link {% if _endpoint == 'model_info' %}active{% endif %}">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Model Info</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="toast-container position-fixed top-0 end-0 p-4 mt-5 mt-lg-0" style="z-index: 1100">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show animate__animated animate__fadeInRight shadow-lg" role="alert">
+                            <i class="fas fa-{% if category == 'error' %}exclamation-triangle{% elif category == 'success' %}check-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <div class="animate__animated animate__fadeIn">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav">
+        <a href="{{ url_for('index') }}" class="mobile-nav-item {% if _endpoint == 'index' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('transactions') }}" class="mobile-nav-item {% if _endpoint == 'transactions' %}active{% endif %}">
+            <i class="fas fa-list"></i>
+            <span>Logs</span>
+        </a>
+        <a href="{{ url_for('predict') }}" class="mobile-nav-item {% if _endpoint == 'predict' %}active{% endif %}">
+            <i class="fas fa-search"></i>
+            <span>Predict</span>
+        </a>
+        <a href="{{ url_for('flagged') }}" class="mobile-nav-item {% if _endpoint == 'flagged' %}active{% endif %}">
+            <i class="fas fa-bell"></i>
+            <span>Flagged</span>
+        </a>
+        <a href="{{ url_for('analytics') }}" class="mobile-nav-item {% if _endpoint == 'analytics' %}active{% endif %}">
+            <i class="fas fa-chart-pie"></i>
+            <span>Stats</span>
+        </a>
+    </nav>
+
+    <!-- Mobile Floating Action Button (Quick Predict) -->
+    <a href="{{ url_for('predict') }}" class="fab-mobile {% if _endpoint == 'predict' %}d-none{% endif %}">
+        <i class="fas fa-plus"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto hide flash alerts
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.toast-container .alert');
+            alerts.forEach(function(alert) {
+                alert.classList.remove('animate__fadeInRight');
+                alert.classList.add('animate__fadeOutRight');
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 500);
+            });
+        }, 5000);
+
+        // Add loading states
+        document.querySelectorAll('.btn:not(.no-loading)').forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.tagName === 'A' && this.getAttribute('target') === '_blank') return;
+                
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Loading...';
+                this.style.pointerEvents = 'none';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.style.pointerEvents = 'auto';
+                }, 2000);
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

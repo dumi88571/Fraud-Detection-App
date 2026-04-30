@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Prediction - Fraud Detection System{% endblock %}
+
+{% block content %}
+<div class="page-header" data-aos="fade-down">
+  <h1 class="h2 fw-bold mb-1"><i class="fas fa-file-upload me-2"></i>Batch Prediction</h1>
+  <p>Upload a CSV to score multiple transactions</p>
+  <div class="mt-3 d-flex justify-content-center gap-2 flex-wrap no-print">
+    <a class="btn btn-sm btn-outline-light no-loading" href="{{ url_for('export_transactions') }}">
+      <i class="fas fa-download me-1"></i>Export CSV
+    </a>
+    <a class="btn btn-sm btn-outline-light no-loading" href="{{ url_for('flagged') }}">
+      <i class="fas fa-triangle-exclamation me-1"></i>Flagged queue
+    </a>
+    <button class="btn btn-sm btn-outline-light no-loading" type="button" onclick="window.print()">
+      <i class="fas fa-print me-1"></i>Print
+    </button>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent"><strong>Upload CSV</strong></div>
+      <div class="card-body">
+        <form method="POST" enctype="multipart/form-data" class="row g-3" id="batchForm">
+          <div class="col-12">
+            <div id="dropZone" class="border border-2 border-dashed rounded-3 p-5 text-center bg-light">
+              <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+              <h5 class="mb-2">Drag & drop your CSV file here</h5>
+              <p class="text-muted mb-3">or click to browse</p>
+              <input class="form-control d-none" type="file" name="file" id="fileInput" accept=".csv" required>
+              <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-folder-open me-2"></i>Select File
+              </button>
+            </div>
+            <div class="form-text mt-2">
+              <i class="fas fa-info-circle me-1"></i>Max size 16MB. Must include required columns.
+            </div>
+            
+            <!-- File info display -->
+            <div id="fileInfo" class="alert alert-info d-none mt-3">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-file-csv fa-2x me-3 text-success"></i>
+                <div>
+                  <strong id="fileName">filename.csv</strong>
+                  <div class="small text-muted" id="fileSize">0 KB</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="clearFile()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Error display -->
+            <div id="errorAlert" class="alert alert-danger d-none mt-3">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <span id="errorMessage"></span>
+            </div>
+          </div>
+
+          <div class="col-12 d-grid">
+            <button class="btn btn-primary no-loading" type="submit" id="submitBtn" disabled>
+              <i class="fas fa-magic me-2"></i>Process batch
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Processing status card -->
+    <div class="card border-0 shadow-sm mt-3 d-none" id="processingCard">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="spinner-border text-primary me-3" role="status">
+            <span class="visually-hidden">Processing...</span>
+          </div>
+          <div>
+            <h6 class="mb-1">Processing your file...</h6>
+            <p class="text-muted small mb-0">This may take a moment depending on file size.</p>
+          </div>
+        </div>
+        <div class="progress mt-3" style="height: 8px;">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent"><strong>Required columns</strong></div>
+      <div class="card-body">
+        <ul class="mb-0 small">
+          <li class="mb-1"><code>user_id</code> <span class="text-muted">- numeric or alphanumeric (e.g., U0001)</span></li>
+          <li class="mb-1"><code>amount</code> <span class="text-muted">- transaction value</span></li>
+          <li class="mb-1"><code>transaction_type</code> <span class="text-muted">- online, pos, atm, etc.</span></li>
+          <li class="mb-1"><code>merchant_category</code> <span class="text-muted">- retail, food, travel, etc.</span></li>
+          <li class="mb-1"><code>country</code> <span class="text-muted">- 2-letter code (US, UK, etc.)</span></li>
+          <li class="mb-1"><code>hour</code> <span class="text-muted">- 0-23 (24-hour format)</span></li>
+          <li class="mb-1"><code>device_risk_score</code> <span class="text-muted">- 0.0 to 1.0</span></li>
+          <li class="mb-1"><code>ip_risk_score</code> <span class="text-muted">- 0.0 to 1.0</span></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="card border-0 shadow-sm mt-3">
+      <div class="card-header bg-transparent"><strong>Data Format Tips</strong></div>
+      <div class="card-body">
+        <div class="small text-muted">
+          <p class="mb-2"><i class="fas fa-check text-success me-2"></i>User IDs can be numeric (123) or alphanumeric (U0001)</p>
+          <p class="mb-2"><i class="fas fa-check text-success me-2"></i>Empty values will use smart defaults</p>
+          <p class="mb-2"><i class="fas fa-check text-success me-2"></i>Invalid rows will be skipped with a log</p>
+          <p class="mb-0"><i class="fas fa-check text-success me-2"></i>Results include fraud probability and risk level</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorAlert = document.getElementById('errorAlert');
+  const errorMessage = document.getElementById('errorMessage');
+  const processingCard = document.getElementById('processingCard');
+  const batchForm = document.getElementById('batchForm');
+
+  // Drag and drop handlers
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-primary', 'bg-primary-subtle');
+  });
+
+  dropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-primary', 'bg-primary-subtle');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-primary', 'bg-primary-subtle');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFile(files[0]);
+    }
+  });
+
+  // File input handler
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFile(e.target.files[0]);
+    }
+  });
+
+  function handleFile(file) {
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      showError('Please upload a CSV file (.csv extension required)');
+      return;
+    }
+
+    // Validate file size (16MB = 16777216 bytes)
+    if (file.size > 16777216) {
+      showError('File size exceeds 16MB limit');
+      return;
+    }
+
+    hideError();
+    
+    // Display file info
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    fileInfo.classList.remove('d-none');
+    submitBtn.disabled = false;
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorAlert.classList.remove('d-none');
+    submitBtn.disabled = true;
+  }
+
+  function hideError() {
+    errorAlert.classList.add('d-none');
+  }
+
+  window.clearFile = function() {
+    fileInput.value = '';
+    fileInfo.classList.add('d-none');
+    submitBtn.disabled = true;
+    hideError();
+  };
+
+  // Show processing indicator on form submit
+  batchForm.addEventListener('submit', function() {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    processingCard.classList.remove('d-none');
+  });
+});
+</script>
+
+<style>
+#dropZone {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+#dropZone:hover {
+  border-color: var(--bs-primary) !important;
+  background-color: var(--bs-primary-bg-subtle) !important;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+</style>
+{% endblock %}
